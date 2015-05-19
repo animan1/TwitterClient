@@ -20,7 +20,7 @@ public class RestApplication extends com.activeandroid.app.Application {
 		RestApplication.context = this;
 	}
 
-	public static RestClient getRestClient() {
-		return (RestClient) RestClient.getInstance(RestClient.class, RestApplication.context);
+	public static TwitterClient getRestClient() {
+		return (TwitterClient) TwitterClient.getInstance(TwitterClient.class, RestApplication.context);
 	}
 }
