@@ -22,6 +22,8 @@ public class Tweet extends Model {
   public String body;
   @Column(name = "profileImageUrl")
   public String profileImageUrl;
+  @Column(name = "userDisplayName")
+  public String userDisplayName;
 
   public Tweet() {
     super();
@@ -34,6 +36,7 @@ public class Tweet extends Model {
       JSONObject userObject = tweetJson.getJSONObject("user");
       this.userId = userObject.getString("id_str");
       this.userHandle = userObject.getString("screen_name");
+      this.userDisplayName = userObject.getString("name");
       this.profileImageUrl = userObject.getString("profile_image_url_https");
 
       this.body = tweetJson.getString("text");

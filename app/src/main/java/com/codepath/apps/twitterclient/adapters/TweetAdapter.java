@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.TextView;
 import com.codepath.apps.twitterclient.R;
 import com.codepath.apps.twitterclient.models.Tweet;
 import com.squareup.picasso.Picasso;
@@ -16,6 +17,7 @@ import java.util.List;
 public class TweetAdapter extends ArrayAdapter<Tweet> {
   class ViewHolder {
     ImageView profileImageView;
+    TextView authorTextView;
   }
 
   public TweetAdapter(Context context, List<Tweet> objects) {
@@ -30,6 +32,7 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
       LayoutInflater inflater = LayoutInflater.from(getContext());
       convertView = inflater.inflate(R.layout.tweet_item, parent, false);
       viewHolder.profileImageView = (ImageView) convertView.findViewById(R.id.profileImageView);
+      viewHolder.authorTextView = (TextView) convertView.findViewById(R.id.authorTextView);
       convertView.setTag(viewHolder);
     } else {
       viewHolder = (ViewHolder) convertView.getTag();
@@ -42,6 +45,8 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
     else {
       viewHolder.profileImageView.setImageDrawable(getDrawable(R.drawable.profile));
     }
+
+    viewHolder.authorTextView.setText(tweet.userDisplayName);
 
     return convertView;
   }

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class TwitterClient extends OAuthBaseClient {
   public interface TweetListHandler {
-    public void onSuccess(ArrayList<Tweet> tweetList);
+    void onSuccess(ArrayList<Tweet> tweetList);
   }
 	public static final Class<? extends Api> REST_API_CLASS = TwitterApi.class;
 	public static final String REST_URL ="https://api.twitter.com/1.1";
