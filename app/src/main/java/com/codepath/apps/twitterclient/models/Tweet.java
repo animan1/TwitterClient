@@ -13,13 +13,15 @@ import java.util.ArrayList;
 @Table(name = "Tweets")
 public class Tweet extends Model {
   @Column(name = "userId")
-  String userId;
+  public String userId;
   @Column(name = "userHandle")
-  String userHandle;
+  public String userHandle;
   @Column(name = "timestamp")
-  String timestamp;
+  public String timestamp;
   @Column(name = "body")
-  String body;
+  public String body;
+  @Column(name = "profileImageUrl")
+  public String profileImageUrl;
 
   public Tweet() {
     super();
@@ -32,6 +34,8 @@ public class Tweet extends Model {
       JSONObject userObject = tweetJson.getJSONObject("user");
       this.userId = userObject.getString("id_str");
       this.userHandle = userObject.getString("screen_name");
+      this.profileImageUrl = userObject.getString("profile_image_url_https");
+
       this.body = tweetJson.getString("text");
     } catch (JSONException e) {
       Log.i(null, tweetJson + "");
