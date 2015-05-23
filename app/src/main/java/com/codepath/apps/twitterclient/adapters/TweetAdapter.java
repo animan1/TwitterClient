@@ -19,6 +19,7 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
     ImageView profileImageView;
     TextView authorTextView;
     TextView usernameTextView;
+    TextView bodyTextView;
   }
 
   public TweetAdapter(Context context, List<Tweet> objects) {
@@ -35,6 +36,7 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
       viewHolder.profileImageView = (ImageView) convertView.findViewById(R.id.profileImageView);
       viewHolder.authorTextView = (TextView) convertView.findViewById(R.id.authorTextView);
       viewHolder.usernameTextView = (TextView) convertView.findViewById(R.id.usernameTextView);
+      viewHolder.bodyTextView = (TextView) convertView.findViewById(R.id.bodyTextView);
       convertView.setTag(viewHolder);
     } else {
       viewHolder = (ViewHolder) convertView.getTag();
@@ -50,6 +52,7 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
 
     viewHolder.authorTextView.setText(tweet.userDisplayName);
     viewHolder.usernameTextView.setText("@" + tweet.userHandle);
+    viewHolder.bodyTextView.setText(tweet.body);
 
     return convertView;
   }
