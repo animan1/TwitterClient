@@ -8,10 +8,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 @Table(name = "Tweets")
 public class Tweet extends Model {
+  final static DateFormat CREATED_AT_FORMAT = new SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZ yyyy");
   @Column(name = "userId")
   public String userId;
   @Column(name = "userHandle")
@@ -24,6 +29,8 @@ public class Tweet extends Model {
   public String profileImageUrl;
   @Column(name = "userDisplayName")
   public String userDisplayName;
+  @Column(name = "createdDatetime")
+  public Date createdDatetime;
 
   public Tweet() {
     super();
@@ -40,7 +47,8 @@ public class Tweet extends Model {
       this.profileImageUrl = userObject.getString("profile_image_url_https");
 
       this.body = tweetJson.getString("text");
-    } catch (JSONException e) {
+      this.createdDatetime = CREATED_AT_FORMAT.parse(tweetJson.getString("created_at"));
+    } catch (JSONException | ParseException e) {
       Log.i(null, tweetJson + "");
       e.printStackTrace();
     }
