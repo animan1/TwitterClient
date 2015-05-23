@@ -2,6 +2,7 @@ package com.codepath.apps.twitterclient.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,14 +13,19 @@ import com.codepath.apps.twitterclient.R;
 import com.codepath.apps.twitterclient.models.Tweet;
 import com.squareup.picasso.Picasso;
 
+import java.util.Date;
 import java.util.List;
 
 public class TweetAdapter extends ArrayAdapter<Tweet> {
+  private static final int TIMESTAMP_FLAGS = DateUtils.FORMAT_ABBREV_ALL;
+  private static final long MIN_RESOLUTION = DateUtils.MINUTE_IN_MILLIS;
+
   class ViewHolder {
     ImageView profileImageView;
     TextView authorTextView;
     TextView usernameTextView;
     TextView bodyTextView;
+    TextView timestampTextView;
   }
 
   public TweetAdapter(Context context, List<Tweet> objects) {
@@ -36,6 +42,7 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
       viewHolder.profileImageView = (ImageView) convertView.findViewById(R.id.profileImageView);
       viewHolder.authorTextView = (TextView) convertView.findViewById(R.id.authorTextView);
       viewHolder.usernameTextView = (TextView) convertView.findViewById(R.id.usernameTextView);
+      viewHolder.timestampTextView = (TextView) convertView.findViewById(R.id.timestampTextView);
       viewHolder.bodyTextView = (TextView) convertView.findViewById(R.id.bodyTextView);
       convertView.setTag(viewHolder);
     } else {
@@ -49,6 +56,11 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
     else {
       viewHolder.profileImageView.setImageDrawable(getDrawable(R.drawable.profile));
     }
+
+    long now = new Date().getTime();
+    String timestampStr = DateUtils.getRelativeTimeSpanString(
+        tweet.createdDatetime.getTime(), now, MIN_RESOLUTION, TIMESTAMP_FLAGS).toString();
+    viewHolder.timestampTextView.setText(timestampStr);
 
     viewHolder.authorTextView.setText(tweet.userDisplayName);
     viewHolder.usernameTextView.setText("@" + tweet.userHandle);
