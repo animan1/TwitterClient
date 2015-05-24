@@ -40,6 +40,18 @@ public class HomeStreamActivity extends ActionBarActivity {
         tweetAdapter.notifyDataSetChanged();
       }
     });
+    tweetListView.setOnScrollListener(new EndlessScrollListener(25) {
+      @Override
+      public void onLoadMore(int page, int totalItemsCount) {
+        String lastId = tweetAdapter.getItem(totalItemsCount - 1).remoteId;
+        client.getHomeTimeline(lastId, new TwitterClient.Handler<ArrayList<Tweet>>() {
+          @Override
+          public void onSuccess(ArrayList<Tweet> tweets) {
+            tweetAdapter.addAll(tweets);
+          }
+        });
+      }
+    });
   }
 
   @Override

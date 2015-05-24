@@ -40,8 +40,15 @@ public class TwitterClient extends OAuthBaseClient {
 	}
 
   public void getHomeTimeline(final Handler<ArrayList<Tweet>> handler) {
+    getHomeTimeline(null, handler);
+  }
+
+  public void getHomeTimeline(String olderThanId, final Handler<ArrayList<Tweet>> handler) {
     String apiUrl = getApiUrl("statuses/home_timeline.json");
     RequestParams params = new RequestParams();
+    if (olderThanId != null) {
+      params.put("max_id", olderThanId);
+    }
     params.put("count", 25);
     getClient().get(apiUrl, params, new JsonHttpResponseHandler() {
       @Override
