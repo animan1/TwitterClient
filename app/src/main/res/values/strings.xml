@@ -4,5 +4,10 @@
   <string name="app_name">Twitter Singularity</string>
   <string name="login_label">Log in</string>
   <string name="title_activity_home_stream">Home</string>
+  <string name="compose">Compose</string>
+  <string name="title_activity_compose">ComposeActivity</string>
+
+  <string name="whats_happening">What\'s happening?</string>
+  <string name="tweet">Tweet</string>
 
 </resources>

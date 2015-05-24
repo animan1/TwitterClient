@@ -50,8 +50,8 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
     }
     Tweet tweet = getItem(position);
 
-    if (tweet.profileImageUrl != null) {
-      Picasso.with(getContext()).load(tweet.profileImageUrl).placeholder(R.drawable.profile).into(viewHolder.profileImageView);
+    if (tweet.user.profileImageUrl != null) {
+      Picasso.with(getContext()).load(tweet.user.profileImageUrl).placeholder(R.drawable.profile).into(viewHolder.profileImageView);
     }
     else {
       viewHolder.profileImageView.setImageDrawable(getDrawable(R.drawable.profile));
@@ -62,8 +62,8 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
         tweet.createdDatetime.getTime(), now, MIN_RESOLUTION, TIMESTAMP_FLAGS).toString();
     viewHolder.timestampTextView.setText(timestampStr);
 
-    viewHolder.authorTextView.setText(tweet.userDisplayName);
-    viewHolder.usernameTextView.setText("@" + tweet.userHandle);
+    viewHolder.authorTextView.setText(tweet.user.displayName);
+    viewHolder.usernameTextView.setText("@" + tweet.user.username);
     viewHolder.bodyTextView.setText(tweet.body);
 
     return convertView;

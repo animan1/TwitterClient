@@ -1,9 +1,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
-      tools:context="com.codepath.apps.twitterclient.activities.HomeStreamActivity">
-      <item android:id="@+id/action_compose"
+      tools:context="com.codepath.apps.twitterclient.activities.ComposeActivity">
+      <item android:id="@+id/action_tweet"
             android:orderInCategory="1"
-            android:title="@string/compose"
+            android:title="@string/tweet"
             app:showAsAction="ifRoom|collapseActionView" />
 </menu>

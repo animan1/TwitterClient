@@ -53,6 +53,10 @@
             android:name=".activities.HomeStreamActivity"
             android:label="@string/title_activity_home_stream" >
         </activity>
+        <activity
+            android:name=".activities.ComposeActivity"
+            android:label="@string/title_activity_compose" >
+        </activity>
     </application>
 
 </manifest>

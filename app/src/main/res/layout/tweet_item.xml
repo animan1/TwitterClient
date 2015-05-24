@@ -13,14 +13,14 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:id="@+id/authorTextView"
-      android:layout_toRightOf="@+id/profileImageView"
+      android:layout_toRightOf="@id/profileImageView"
       android:layout_alignTop="@id/profileImageView"
       android:textColor="@android:color/black"/>
   <TextView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:id="@+id/usernameTextView"
-      android:layout_toRightOf="@+id/authorTextView"
+      android:layout_toRightOf="@id/authorTextView"
       android:layout_alignTop="@id/authorTextView"
       android:layout_alignBottom="@id/authorTextView"
       android:textColor="@android:color/darker_gray"
@@ -30,18 +30,17 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:id="@+id/timestampTextView"
-      android:layout_toRightOf="@+id/usernameTextView"
+      android:layout_toRightOf="@id/usernameTextView"
       android:layout_alignParentRight="true"
       android:layout_alignTop="@id/usernameTextView"
       android:layout_alignBottom="@id/usernameTextView"
       android:textColor="@android:color/darker_gray"
-      android:textAlignment="textEnd" android:gravity="right"/>
+      android:textAlignment="textEnd" android:gravity="end"/>
   <TextView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:id="@+id/bodyTextView"
       android:layout_toRightOf="@id/profileImageView"
       android:layout_below="@id/authorTextView"
-      android:layout_alignParentBottom="true"
       android:layout_alignParentRight="true"/>
 </RelativeLayout>
