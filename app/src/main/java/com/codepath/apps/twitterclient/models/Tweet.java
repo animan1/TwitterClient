@@ -57,6 +57,10 @@ public class Tweet extends Model {
     return tweetJson.getString("id_str");
   }
 
+  public static List<Tweet> getRecentCached(int count) {
+    return new Select().from(Tweet.class).orderBy("-remoteId").execute();
+  }
+
   public static ArrayList<Tweet> fromJson(JSONArray jsonArray) {
     ArrayList<Tweet> tweets = new ArrayList<>(jsonArray.length());
 

@@ -2,6 +2,8 @@ package com.codepath.apps.twitterclient.network;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.widget.Toast;
+import com.activeandroid.util.Log;
 import com.codepath.apps.twitterclient.R;
 import com.codepath.apps.twitterclient.models.Tweet;
 import com.codepath.apps.twitterclient.models.User;
@@ -26,18 +28,19 @@ public class TwitterClient extends OAuthBaseClient {
   public static final String LOGGED_IN_USER_ID = "logged_in_user_id";
   public static final String TWITTER_PREFERENCES = "twitter";
   public static final int MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
-	public static final Class<? extends Api> REST_API_CLASS = TwitterApi.class;
-	public static final String REST_URL ="https://api.twitter.com/1.1";
-	public static final String REST_CALLBACK_URL = "oauth://codepathtweets";
+  public static final Class<? extends Api> REST_API_CLASS = TwitterApi.class;
+  public static final String REST_URL ="https://api.twitter.com/1.1";
+  public static final String REST_CALLBACK_URL = "oauth://codepathtweets";
+  static final String TAG = TwitterResponseHandler.class.getSimpleName();
 
-	public TwitterClient(Context context) {
-		super(context,
+  public TwitterClient(Context context) {
+    super(context,
         REST_API_CLASS,
         REST_URL,
         context.getResources().getString(R.string.consumerKey),
         context.getResources().getString(R.string.consumerSecret),
         REST_CALLBACK_URL);
-	}
+  }
 
   public void getHomeTimeline(final Handler<ArrayList<Tweet>> handler) {
     getHomeTimeline(null, handler);
@@ -50,7 +53,7 @@ public class TwitterClient extends OAuthBaseClient {
       params.put("max_id", olderThanId);
     }
     params.put("count", 25);
-    getClient().get(apiUrl, params, new JsonHttpResponseHandler() {
+    getClient().get(apiUrl, params, new TwitterResponseHandler() {
       @Override
       public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
           handler.onSuccess(Tweet.fromJson(response));
@@ -72,7 +75,7 @@ public class TwitterClient extends OAuthBaseClient {
     String apiUrl = getApiUrl("account/verify_credentials.json");
     RequestParams params = new RequestParams();
     params.put("skip_status", 1);
-    getClient().get(apiUrl, params, new JsonHttpResponseHandler() {
+    getClient().get(apiUrl, params, new TwitterResponseHandler() {
       @Override
       public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
         User user = User.fromJson(response);
@@ -86,12 +89,24 @@ public class TwitterClient extends OAuthBaseClient {
     String apiUrl = getApiUrl("statuses/update.json");
     RequestParams params = new RequestParams();
     params.put("status", msg);
-    getClient().post(apiUrl, params, new JsonHttpResponseHandler() {
+    getClient().post(apiUrl, params, new TwitterResponseHandler() {
       @Override
       public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
         Tweet tweet = Tweet.fromJson(response);
         handler.onSuccess(tweet);
       }
     });
+  }
+
+  class TwitterResponseHandler extends JsonHttpResponseHandler {
+    @Override
+    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+      Log.e(TAG, errorResponse + "", throwable);
+      String msg = "An unknown error has occurred.";
+      if (statusCode == 0) {
+        msg = "Unable to reach Twitter";
+      }
+      Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+    }
   }
 }

@@ -28,26 +28,28 @@ public class HomeStreamActivity extends ActionBarActivity {
     client = TwitterApplication.getTwitterClient();
     tweetListView = (ListView) findViewById(R.id.tweetListView);
     tweetAdapter = new TweetAdapter(this, new ArrayList<Tweet>());
-    tweetListView.setAdapter(tweetAdapter);
     initTweetListView();
   }
 
   public void initTweetListView() {
+    tweetAdapter.addAll(Tweet.getRecentCached(50));
+    tweetListView.setAdapter(tweetAdapter);
     client.getHomeTimeline(new TwitterClient.Handler<ArrayList<Tweet>>() {
       @Override
       public void onSuccess(ArrayList<Tweet> tweetList) {
+        tweetAdapter.clear();
         tweetAdapter.addAll(tweetList);
         tweetAdapter.notifyDataSetChanged();
-      }
-    });
-    tweetListView.setOnScrollListener(new EndlessScrollListener(25) {
-      @Override
-      public void onLoadMore(int page, int totalItemsCount) {
-        String lastId = tweetAdapter.getItem(totalItemsCount - 1).remoteId;
-        client.getHomeTimeline(lastId, new TwitterClient.Handler<ArrayList<Tweet>>() {
+        tweetListView.setOnScrollListener(new EndlessScrollListener(25) {
           @Override
-          public void onSuccess(ArrayList<Tweet> tweets) {
-            tweetAdapter.addAll(tweets);
+          public void onLoadMore(int page, int totalItemsCount) {
+            String lastId = tweetAdapter.getItem(totalItemsCount - 1).remoteId;
+            client.getHomeTimeline(lastId, new TwitterClient.Handler<ArrayList<Tweet>>() {
+              @Override
+              public void onSuccess(ArrayList<Tweet> tweets) {
+                tweetAdapter.addAll(tweets);
+              }
+            });
           }
         });
       }
