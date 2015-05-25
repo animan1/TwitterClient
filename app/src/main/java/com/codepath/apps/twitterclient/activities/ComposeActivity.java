@@ -59,6 +59,9 @@ public class ComposeActivity extends ActionBarActivity {
         usernameTextView.setText("@" + user.username);
         authorTextView.setText(user.displayName);
       }
+
+      @Override
+      public void onFailure(int statusCode, String error) {}
     });
   }
 
@@ -87,6 +90,9 @@ public class ComposeActivity extends ActionBarActivity {
         setResult(RESULT_OK, data);
         ComposeActivity.this.finish();
       }
+
+      @Override
+      public void onFailure(int statusCode, String error) {}
     });
   }
 }

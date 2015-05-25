@@ -23,6 +23,7 @@ public class TwitterClient extends OAuthBaseClient {
 
   public interface Handler<T> {
     void onSuccess(T value);
+    void onFailure(int statusCode, String error);
   }
 
   public static final String LOGGED_IN_USER_ID = "logged_in_user_id";
@@ -33,6 +34,8 @@ public class TwitterClient extends OAuthBaseClient {
   public static final String REST_CALLBACK_URL = "oauth://codepathtweets";
   static final String TAG = TwitterResponseHandler.class.getSimpleName();
 
+  private final SharedPreferences preferences;
+
   public TwitterClient(Context context) {
     super(context,
         REST_API_CLASS,
@@ -40,6 +43,7 @@ public class TwitterClient extends OAuthBaseClient {
         context.getResources().getString(R.string.consumerKey),
         context.getResources().getString(R.string.consumerSecret),
         REST_CALLBACK_URL);
+    this.preferences = this.context.getSharedPreferences(TWITTER_PREFERENCES, this.context.MODE_PRIVATE);
   }
 
   public void getHomeTimeline(final Handler<ArrayList<Tweet>> handler) {
@@ -53,7 +57,7 @@ public class TwitterClient extends OAuthBaseClient {
       params.put("max_id", olderThanId);
     }
     params.put("count", 25);
-    getClient().get(apiUrl, params, new TwitterResponseHandler() {
+    getClient().get(apiUrl, params, new TwitterResponseHandler(handler) {
       @Override
       public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
           handler.onSuccess(Tweet.fromJson(response));
@@ -62,34 +66,45 @@ public class TwitterClient extends OAuthBaseClient {
   }
 
   public void getLoggedInUser(final Handler<User> handler) {
-    final SharedPreferences preferences = this.context.getSharedPreferences(TWITTER_PREFERENCES, this.context.MODE_PRIVATE);
-    long loggedInUserId = preferences.getLong(LOGGED_IN_USER_ID, -1);
-    if (loggedInUserId != -1) {
-      User user = User.load(User.class, loggedInUserId);
-      if (new Date().getTime() - user.updatedDateTime.getTime() < MILLIS_IN_DAY) {
-        handler.onSuccess(user);
-        return;
-      }
+    User user = getCachedUser();
+    if ((user != null) && (new Date().getTime() - user.updatedDateTime.getTime() < MILLIS_IN_DAY)) {
+      handler.onSuccess(user);
+      return;
     }
 
     String apiUrl = getApiUrl("account/verify_credentials.json");
     RequestParams params = new RequestParams();
     params.put("skip_status", 1);
-    getClient().get(apiUrl, params, new TwitterResponseHandler() {
+    getClient().get(apiUrl, params, new TwitterResponseHandler(handler) {
       @Override
       public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
         User user = User.fromJson(response);
         preferences.edit().putLong(LOGGED_IN_USER_ID, user.getId()).apply();
         handler.onSuccess(user);
       }
+
+      @Override
+      public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+        User user = getCachedUser();
+        if (user == null) {
+          super.onFailure(statusCode, headers, throwable, errorResponse);
+        } else {
+          handler.onSuccess(user);
+        }
+      }
     });
+  }
+
+  public User getCachedUser() {
+    long loggedInUserId = preferences.getLong(LOGGED_IN_USER_ID, -1);
+    return loggedInUserId == -1 ? null : User.load(User.class, loggedInUserId);
   }
 
   public void postTweet(final String msg, final Handler<Tweet> handler) {
     String apiUrl = getApiUrl("statuses/update.json");
     RequestParams params = new RequestParams();
     params.put("status", msg);
-    getClient().post(apiUrl, params, new TwitterResponseHandler() {
+    getClient().post(apiUrl, params, new TwitterResponseHandler(handler) {
       @Override
       public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
         Tweet tweet = Tweet.fromJson(response);
@@ -99,6 +114,12 @@ public class TwitterClient extends OAuthBaseClient {
   }
 
   class TwitterResponseHandler extends JsonHttpResponseHandler {
+    final Handler<?> activityHandler;
+
+    TwitterResponseHandler(Handler<?> activityHandler) {
+      this.activityHandler = activityHandler;
+    }
+
     @Override
     public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
       Log.e(TAG, errorResponse + "", throwable);
@@ -107,6 +128,7 @@ public class TwitterClient extends OAuthBaseClient {
         msg = "Unable to reach Twitter";
       }
       Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+      activityHandler.onFailure(statusCode, msg);
     }
   }
 }

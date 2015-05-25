@@ -2,6 +2,7 @@ package com.codepath.apps.twitterclient.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +21,25 @@ public class HomeStreamActivity extends ActionBarActivity {
   TwitterClient client;
   private ListView tweetListView;
   private TweetAdapter tweetAdapter;
+  private SwipeRefreshLayout timelineSwipeContainer;
+
+  EndlessScrollListener scrollListener = new EndlessScrollListener(25) {
+    @Override
+    public void onLoadMore(int page, int totalItemsCount) {
+      String lastId = tweetAdapter.getItem(totalItemsCount - 1).remoteId;
+      client.getHomeTimeline(lastId, new TwitterClient.Handler<ArrayList<Tweet>>() {
+        @Override
+        public void onSuccess(ArrayList<Tweet> tweets) {
+          tweetAdapter.addAll(tweets);
+        }
+
+        @Override
+        public void onFailure(int statusCode, String error) {
+          loading = false;
+        }
+      });
+    }
+  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -28,30 +48,42 @@ public class HomeStreamActivity extends ActionBarActivity {
     client = TwitterApplication.getTwitterClient();
     tweetListView = (ListView) findViewById(R.id.tweetListView);
     tweetAdapter = new TweetAdapter(this, new ArrayList<Tweet>());
+    timelineSwipeContainer = (SwipeRefreshLayout) findViewById(R.id.timelineSwipeContainer);
     initTweetListView();
+    initSwipeContainer();
+  }
+
+  private void initSwipeContainer() {
+    timelineSwipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+      @Override
+      public void onRefresh() {
+        refresh();
+      }
+    });
   }
 
   public void initTweetListView() {
     tweetAdapter.addAll(Tweet.getRecentCached(50));
     tweetListView.setAdapter(tweetAdapter);
+    refresh();
+  }
+
+  private void refresh() {
+    // don't allow paging while we're fetching new results
+    tweetListView.setOnScrollListener(null);
     client.getHomeTimeline(new TwitterClient.Handler<ArrayList<Tweet>>() {
       @Override
       public void onSuccess(ArrayList<Tweet> tweetList) {
         tweetAdapter.clear();
         tweetAdapter.addAll(tweetList);
         tweetAdapter.notifyDataSetChanged();
-        tweetListView.setOnScrollListener(new EndlessScrollListener(25) {
-          @Override
-          public void onLoadMore(int page, int totalItemsCount) {
-            String lastId = tweetAdapter.getItem(totalItemsCount - 1).remoteId;
-            client.getHomeTimeline(lastId, new TwitterClient.Handler<ArrayList<Tweet>>() {
-              @Override
-              public void onSuccess(ArrayList<Tweet> tweets) {
-                tweetAdapter.addAll(tweets);
-              }
-            });
-          }
-        });
+        tweetListView.setOnScrollListener(scrollListener);
+        timelineSwipeContainer.setRefreshing(false);
+      }
+
+      @Override
+      public void onFailure(int statusCode, String error) {
+        timelineSwipeContainer.setRefreshing(false);
       }
     });
   }
