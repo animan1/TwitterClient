@@ -1,12 +1,12 @@
 package com.codepath.apps.twitterclient.activities;
 
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.support.v7.app.ActionBarActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,6 +27,7 @@ public class ComposeActivity extends ActionBarActivity {
   private TextView authorTextView;
   private EditText tweetEditText;
   private MenuItem tweetMenuItem;
+  private TextView countTextView;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +43,19 @@ public class ComposeActivity extends ActionBarActivity {
   }
 
   private void initTweetEdit() {
-    this.tweetEditText.setOnKeyListener(new View.OnKeyListener() {
+    this.tweetEditText.addTextChangedListener(new TextWatcher() {
       @Override
-      public boolean onKey(View v, int keyCode, KeyEvent event) {
-        tweetMenuItem.setEnabled(tweetEditText.getText().length() > 0);
-        return false;
+      public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+      @Override
+      public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+      @Override
+      public void afterTextChanged(Editable s) {
+        int len = s.length();
+        int remaining = 140 - len;
+        tweetMenuItem.setEnabled((len > 0) && (remaining >= 0));
+        countTextView.setText("" + remaining);
       }
     });
   }
@@ -70,6 +79,18 @@ public class ComposeActivity extends ActionBarActivity {
     // Inflate the menu; this adds items to the action bar if it is present.
     getMenuInflater().inflate(R.menu.menu_compose, menu);
     tweetMenuItem = menu.findItem(R.id.action_tweet);
+    MenuItem countMenuItem = menu.findItem(R.id.action_count);
+    this.countTextView = (TextView) countMenuItem.getActionView().findViewById(R.id.textView);
+    initTweetMenuItem();
+    initCountTextView();
+    return super.onCreateOptionsMenu(menu);
+  }
+
+  private void initCountTextView() {
+    this.countTextView.setText("140");
+  }
+
+  private void initTweetMenuItem() {
     tweetMenuItem.setEnabled(false);
     tweetMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
       @Override
@@ -78,7 +99,6 @@ public class ComposeActivity extends ActionBarActivity {
         return false;
       }
     });
-    return super.onCreateOptionsMenu(menu);
   }
 
   private void onTweet() {
