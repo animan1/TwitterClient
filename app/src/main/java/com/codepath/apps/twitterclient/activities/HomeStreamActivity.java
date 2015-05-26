@@ -114,6 +114,7 @@ public class HomeStreamActivity extends ActionBarActivity {
       long tweetId = data.getLongExtra(ComposeActivity.TWEET_ID, -1);
       Tweet tweet = Tweet.load(Tweet.class, tweetId);
       tweetAdapter.insert(tweet, 0);
+      tweetListView.smoothScrollToPosition(0);
     }
   }
 }

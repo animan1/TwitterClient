@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.widget.Toast;
 import com.activeandroid.util.Log;
 import com.codepath.apps.twitterclient.R;
+import com.codepath.apps.twitterclient.Utils;
 import com.codepath.apps.twitterclient.models.Tweet;
 import com.codepath.apps.twitterclient.models.User;
 import com.codepath.oauth.OAuthBaseClient;
@@ -57,10 +58,10 @@ public class TwitterClient extends OAuthBaseClient {
       params.put("max_id", olderThanId);
     }
     params.put("count", 25);
-    getClient().get(apiUrl, params, new TwitterResponseHandler(handler) {
+    get(apiUrl, params, new TwitterResponseHandler(handler) {
       @Override
       public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-          handler.onSuccess(Tweet.fromJson(response));
+        handler.onSuccess(Tweet.fromJson(response));
       }
     });
   }
@@ -75,7 +76,7 @@ public class TwitterClient extends OAuthBaseClient {
     String apiUrl = getApiUrl("account/verify_credentials.json");
     RequestParams params = new RequestParams();
     params.put("skip_status", 1);
-    getClient().get(apiUrl, params, new TwitterResponseHandler(handler) {
+    get(apiUrl, params, new TwitterResponseHandler(handler) {
       @Override
       public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
         User user = User.fromJson(response);
@@ -104,13 +105,29 @@ public class TwitterClient extends OAuthBaseClient {
     String apiUrl = getApiUrl("statuses/update.json");
     RequestParams params = new RequestParams();
     params.put("status", msg);
-    getClient().post(apiUrl, params, new TwitterResponseHandler(handler) {
+    post(apiUrl, params, new TwitterResponseHandler(handler) {
       @Override
       public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
         Tweet tweet = Tweet.fromJson(response);
         handler.onSuccess(tweet);
       }
     });
+  }
+
+  private void get(String apiUrl, RequestParams params, TwitterResponseHandler handler) {
+    if (!Utils.isNetworkAvailable(context)) {
+      handler.onFailure(0, null, null, (JSONObject) null);
+      return;
+    }
+    getClient().get(apiUrl, params, handler);
+  }
+
+  private void post(String apiUrl, RequestParams params, TwitterResponseHandler handler) {
+    if (!Utils.isNetworkAvailable(context)) {
+      handler.onFailure(0, null, null, (JSONObject) null);
+      return;
+    }
+    getClient().post(apiUrl, params, handler);
   }
 
   class TwitterResponseHandler extends JsonHttpResponseHandler {
@@ -123,9 +140,11 @@ public class TwitterClient extends OAuthBaseClient {
     @Override
     public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
       Log.e(TAG, errorResponse + "", throwable);
-      String msg = "An unknown error has occurred.";
+      String msg = "An unknown error has occurred: " + statusCode;
       if (statusCode == 0) {
         msg = "Unable to reach Twitter";
+      } else if (statusCode == 429) {
+        msg = "Request limit exceeded";
       }
       Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
       activityHandler.onFailure(statusCode, msg);

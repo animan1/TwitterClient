@@ -37,7 +37,7 @@ public class ComposeActivity extends ActionBarActivity {
     this.profileImageView = (ImageView) findViewById(R.id.profileImageView);
     this.usernameTextView = (TextView) findViewById(R.id.usernameTextView);
     this.authorTextView = (TextView) findViewById(R.id.authorTextView);
-    this.tweetEditText = (EditText) findViewById(R.id.tweetEditText);
+    this.tweetEditText = (EditText) findViewById(R.id.bodyTextView);
     initUserInfo();
     initTweetEdit();
   }
