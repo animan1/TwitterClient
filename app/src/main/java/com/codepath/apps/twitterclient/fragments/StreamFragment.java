@@ -30,7 +30,7 @@ public class StreamFragment extends Fragment {
     @Override
     public void onLoadMore(int page, int totalItemsCount) {
       String lastId = tweetAdapter.getItem(totalItemsCount - 1).remoteId;
-      client.getHomeTimeline(lastId, new TwitterClient.Handler<ArrayList<Tweet>>() {
+      client.getTimeline(TwitterClient.TIMELINE.HOME).olderThan(lastId).submit(new TwitterClient.Handler<ArrayList<Tweet>>() {
         @Override
         public void onSuccess(ArrayList<Tweet> tweets) {
           tweetAdapter.addAll(tweets);
@@ -112,7 +112,7 @@ public class StreamFragment extends Fragment {
   private void refresh() {
     // don't allow paging while we're fetching new results
     tweetListView.setOnScrollListener(null);
-    client.getHomeTimeline(new TwitterClient.Handler<ArrayList<Tweet>>() {
+    client.getTimeline(TwitterClient.TIMELINE.HOME).submit(new TwitterClient.Handler<ArrayList<Tweet>>() {
       @Override
       public void onSuccess(ArrayList<Tweet> tweetList) {
         tweetAdapter.clear();

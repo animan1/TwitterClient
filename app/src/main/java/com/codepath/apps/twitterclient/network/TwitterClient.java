@@ -22,6 +22,17 @@ import java.util.Date;
 
 public class TwitterClient extends OAuthBaseClient {
 
+  public enum TIMELINE {
+    HOME("home_timeline"),
+    MENTIONS("mentions_timeline");
+
+    private final String relativeEndpoint;
+
+    TIMELINE(String relativeEndpoint) {
+      this.relativeEndpoint = relativeEndpoint;
+    }
+  };
+
   public interface Handler<T> {
     void onSuccess(T value);
     void onFailure(int statusCode, String error);
@@ -47,23 +58,33 @@ public class TwitterClient extends OAuthBaseClient {
     this.preferences = this.context.getSharedPreferences(TWITTER_PREFERENCES, this.context.MODE_PRIVATE);
   }
 
-  public void getHomeTimeline(final Handler<ArrayList<Tweet>> handler) {
-    getHomeTimeline(null, handler);
+  public TimelineRetriever getTimeline(TIMELINE timeline) {
+    return new TimelineRetriever(timeline);
   }
 
-  public void getHomeTimeline(String olderThanId, final Handler<ArrayList<Tweet>> handler) {
-    String apiUrl = getApiUrl("statuses/home_timeline.json");
-    RequestParams params = new RequestParams();
-    if (olderThanId != null) {
-      params.put("max_id", olderThanId);
+  public class TimelineRetriever {
+    private final String apiUrl;
+    private final RequestParams params;
+
+    public TimelineRetriever(TIMELINE timeline) {
+      apiUrl = getApiUrl("statuses/" + timeline.relativeEndpoint + ".json");
+      params = new RequestParams();
+      params.put("count", 25);
     }
-    params.put("count", 25);
-    get(apiUrl, params, new TwitterResponseHandler(handler) {
-      @Override
-      public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-        handler.onSuccess(Tweet.fromJson(response));
-      }
-    });
+
+    public TimelineRetriever olderThan(String olderThanId) {
+      params.put("max_id", olderThanId);
+      return this;
+    }
+
+    public void submit(final Handler<ArrayList<Tweet>> handler) {
+      get(apiUrl, params, new TwitterResponseHandler(handler) {
+        @Override
+        public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
+          handler.onSuccess(Tweet.fromJson(response));
+        }
+      });
+    }
   }
 
   public void getLoggedInUser(final Handler<User> handler) {
@@ -76,24 +97,6 @@ public class TwitterClient extends OAuthBaseClient {
     String apiUrl = getApiUrl("account/verify_credentials.json");
     RequestParams params = new RequestParams();
     params.put("skip_status", 1);
-    get(apiUrl, params, new TwitterResponseHandler(handler) {
-      @Override
-      public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-        User user = User.fromJson(response);
-        preferences.edit().putLong(LOGGED_IN_USER_ID, user.getId()).apply();
-        handler.onSuccess(user);
-      }
-
-      @Override
-      public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-        User user = getCachedUser();
-        if (user == null) {
-          super.onFailure(statusCode, headers, throwable, errorResponse);
-        } else {
-          handler.onSuccess(user);
-        }
-      }
-    });
   }
 
   public User getCachedUser() {
