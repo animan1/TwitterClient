@@ -9,11 +9,11 @@ import com.codepath.apps.twitterclient.R;
 import com.codepath.apps.twitterclient.adapters.StreamPagerAdapter;
 import com.codepath.apps.twitterclient.fragments.HomeStreamFragment;
 
-public class HomeStreamActivity extends ActionBarActivity {
+public class NavActivity extends ActionBarActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_home_stream);
+    setContentView(R.layout.activity_nav);
 
     ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
     viewPager.setAdapter(new StreamPagerAdapter(getSupportFragmentManager()));
