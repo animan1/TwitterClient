@@ -4,7 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.codepath.apps.twitterclient.fragments.HomeStreamFragment;
+import com.codepath.apps.twitterclient.fragments.StreamFragment;
 
 public class StreamPagerAdapter extends FragmentPagerAdapter {
   public StreamPagerAdapter(FragmentManager fm) {
@@ -12,7 +12,7 @@ public class StreamPagerAdapter extends FragmentPagerAdapter {
   }
 
   private final Tab[] TABS = {
-    new Tab("Home", new HomeStreamFragment())
+    new Tab("Home", new StreamFragment())
   };
 
   @Override

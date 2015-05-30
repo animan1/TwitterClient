@@ -17,7 +17,7 @@ import com.codepath.apps.twitterclient.network.TwitterClient;
 
 import java.util.ArrayList;
 
-public class HomeStreamFragment extends Fragment {
+public class StreamFragment extends Fragment {
   private static final int COMPOSE_REQUEST_CODE = 100;
 
   TwitterClient client;

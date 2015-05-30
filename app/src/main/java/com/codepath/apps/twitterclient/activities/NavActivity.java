@@ -7,7 +7,6 @@ import android.support.v7.app.ActionBarActivity;
 import com.astuetz.PagerSlidingTabStrip;
 import com.codepath.apps.twitterclient.R;
 import com.codepath.apps.twitterclient.adapters.StreamPagerAdapter;
-import com.codepath.apps.twitterclient.fragments.HomeStreamFragment;
 
 public class NavActivity extends ActionBarActivity {
   @Override
