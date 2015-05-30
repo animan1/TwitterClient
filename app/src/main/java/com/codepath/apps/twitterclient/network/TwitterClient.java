@@ -19,6 +19,7 @@ import org.scribe.builder.api.TwitterApi;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 
 public class TwitterClient extends OAuthBaseClient {
 
@@ -26,16 +27,23 @@ public class TwitterClient extends OAuthBaseClient {
     HOME("home_timeline"),
     MENTIONS("mentions_timeline");
 
-    private final String relativeEndpoint;
+    private final String relativeUrl;
 
-    TIMELINE(String relativeEndpoint) {
-      this.relativeEndpoint = relativeEndpoint;
+    TIMELINE(String jsonName) {
+      this.relativeUrl = "statuses/" + jsonName + ".json";
     }
   };
 
   public interface Handler<T> {
     void onSuccess(T value);
     void onFailure(int statusCode, String error);
+  }
+
+  public static class HandlerAdapter<T> implements Handler<T> {
+    @Override
+    public void onSuccess(T value) {}
+    @Override
+    public void onFailure(int statusCode, String error) {}
   }
 
   public static final String LOGGED_IN_USER_ID = "logged_in_user_id";
@@ -58,17 +66,49 @@ public class TwitterClient extends OAuthBaseClient {
     this.preferences = this.context.getSharedPreferences(TWITTER_PREFERENCES, this.context.MODE_PRIVATE);
   }
 
+  public class Requester<E> {
+    final String apiUrl;
+    final RequestParams params;
+    final TwitterResponseHandler<E> responseHandler;
+
+    public Requester(String relativeUrl, TwitterResponseHandler responseHandler) {
+      this.apiUrl = getApiUrl(relativeUrl);
+      this.params = new RequestParams();
+      this.responseHandler = responseHandler;
+    }
+
+    void get(Handler<E> handler) {
+      responseHandler.handlers.add(handler);
+      if (!Utils.isNetworkAvailable(context)) {
+        responseHandler.onFailure(0, null, null, (JSONObject) null);
+        return;
+      }
+      getClient().get(apiUrl, params, responseHandler);
+    }
+
+    void post(Handler<E> handler) {
+      responseHandler.handlers.add(handler);
+      if (!Utils.isNetworkAvailable(context)) {
+        responseHandler.onFailure(0, null, null, (JSONObject) null);
+        return;
+      }
+      getClient().post(apiUrl, params, responseHandler);
+    }
+  }
+
   public TimelineRetriever getTimeline(TIMELINE timeline) {
     return new TimelineRetriever(timeline);
   }
 
-  public class TimelineRetriever {
-    private final String apiUrl;
-    private final RequestParams params;
+  public class TimelineRetriever extends Requester<ArrayList<Tweet>> {
 
     public TimelineRetriever(TIMELINE timeline) {
-      apiUrl = getApiUrl("statuses/" + timeline.relativeEndpoint + ".json");
-      params = new RequestParams();
+      super(timeline.relativeUrl, new TwitterResponseHandler() {
+        @Override
+        public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
+          onSuccess(Tweet.fromJson(response));
+        }
+      });
       params.put("count", 25);
     }
 
@@ -78,66 +118,104 @@ public class TwitterClient extends OAuthBaseClient {
     }
 
     public void submit(final Handler<ArrayList<Tweet>> handler) {
-      get(apiUrl, params, new TwitterResponseHandler(handler) {
-        @Override
-        public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-          handler.onSuccess(Tweet.fromJson(response));
-        }
-      });
+      get(handler);
     }
   }
 
-  public void getLoggedInUser(final Handler<User> handler) {
-    User user = getCachedUser();
-    if ((user != null) && (new Date().getTime() - user.updatedDateTime.getTime() < MILLIS_IN_DAY)) {
-      handler.onSuccess(user);
-      return;
-    }
-
-    String apiUrl = getApiUrl("account/verify_credentials.json");
-    RequestParams params = new RequestParams();
-    params.put("skip_status", 1);
-  }
-
-  public User getCachedUser() {
+  public UserRetriever getLoggedInUser() {
     long loggedInUserId = preferences.getLong(LOGGED_IN_USER_ID, -1);
-    return loggedInUserId == -1 ? null : User.load(User.class, loggedInUserId);
-  }
-
-  public void postTweet(final String msg, final Handler<Tweet> handler) {
-    String apiUrl = getApiUrl("statuses/update.json");
-    RequestParams params = new RequestParams();
-    params.put("status", msg);
-    post(apiUrl, params, new TwitterResponseHandler(handler) {
+    return new UserRetriever("account/verify_credentials.json", loggedInUserId).extraHandler(new HandlerAdapter<User>() {
       @Override
-      public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-        Tweet tweet = Tweet.fromJson(response);
-        handler.onSuccess(tweet);
+      public void onSuccess(User user) {
+        preferences.edit().putLong(LOGGED_IN_USER_ID, user.getId()).apply();
       }
     });
   }
 
-  private void get(String apiUrl, RequestParams params, TwitterResponseHandler handler) {
-    if (!Utils.isNetworkAvailable(context)) {
-      handler.onFailure(0, null, null, (JSONObject) null);
-      return;
-    }
-    getClient().get(apiUrl, params, handler);
+  public User getCachedUser(long id) {
+    return id == -1 ? null : User.load(User.class, id);
   }
 
-  private void post(String apiUrl, RequestParams params, TwitterResponseHandler handler) {
-    if (!Utils.isNetworkAvailable(context)) {
-      handler.onFailure(0, null, null, (JSONObject) null);
-      return;
+  public class UserRetriever extends Requester {
+    private final long userId;
+
+    public UserRetriever(String relativeUrl, final long userId) {
+      super(relativeUrl, new TwitterResponseHandler() {
+        @Override
+        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+          User user = User.fromJson(response);
+          onSuccess(user);
+        }
+
+        @Override
+        public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+          User user = getCachedUser(userId);
+          if (user == null) {
+            super.onFailure(statusCode, headers, throwable, errorResponse);
+          } else {
+            onSuccess(user);
+          }
+        }
+      });
+      params.put("skip_status", 1);
+      this.userId = userId;
     }
-    getClient().post(apiUrl, params, handler);
+
+    public UserRetriever extraHandler(Handler<User> handler) {
+      this.responseHandler.handlers.add(handler);
+      return this;
+    }
+
+    public void submit(final Handler<User> handler) {
+      User user = getCachedUser(userId);
+      if ((user != null) && (new Date().getTime() - user.updatedDateTime.getTime() < MILLIS_IN_DAY)) {
+        handler.onSuccess(user);
+        return;
+      }
+
+      get(handler);
+    }
   }
 
-  class TwitterResponseHandler extends JsonHttpResponseHandler {
-    final Handler<?> activityHandler;
+  public TweetSubmitter postTweet() {
+    return new TweetSubmitter();
+  }
 
-    TwitterResponseHandler(Handler<?> activityHandler) {
-      this.activityHandler = activityHandler;
+  public class TweetSubmitter extends Requester<Tweet> {
+    public TweetSubmitter() {
+      super("statuses/update.json", new TwitterResponseHandler() {
+        @Override
+        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+          onSuccess(Tweet.fromJson(response));
+        }
+      });
+    }
+
+    public TweetSubmitter message(String msg) {
+      params.put("status", msg);
+      return this;
+    }
+
+    public void submit(final Handler<Tweet> handler) {
+      post(handler);
+    }
+  }
+
+  class TwitterResponseHandler<E> extends JsonHttpResponseHandler {
+    final LinkedList<Handler<E>> handlers = new LinkedList<>();
+
+    public TwitterResponseHandler(Handler<E> ... handlers) {
+      if (handlers != null) {
+        for (Handler<E> handler : handlers) {
+          this.handlers.add(handler);
+        }
+      }
+    }
+
+    public void onSuccess(E value) {
+      for (Handler<E> handler : handlers) {
+        handler.onSuccess(value);
+      }
     }
 
     @Override
@@ -150,7 +228,9 @@ public class TwitterClient extends OAuthBaseClient {
         msg = "Request limit exceeded";
       }
       Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-      activityHandler.onFailure(statusCode, msg);
+      for (Handler<E> handler : handlers) {
+        handler.onFailure(statusCode, msg);
+      }
     }
   }
 }

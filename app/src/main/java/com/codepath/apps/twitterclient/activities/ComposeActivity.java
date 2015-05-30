@@ -61,16 +61,13 @@ public class ComposeActivity extends ActionBarActivity {
   }
 
   private void initUserInfo() {
-    this.client.getLoggedInUser(new TwitterClient.Handler<User>() {
+    this.client.getLoggedInUser().submit(new TwitterClient.HandlerAdapter<User>() {
       @Override
       public void onSuccess(User user) {
         Picasso.with(ComposeActivity.this).load(user.profileImageUrl).placeholder(R.drawable.profile).into(profileImageView);
         usernameTextView.setText("@" + user.username);
         authorTextView.setText(user.displayName);
       }
-
-      @Override
-      public void onFailure(int statusCode, String error) {}
     });
   }
 
@@ -102,7 +99,7 @@ public class ComposeActivity extends ActionBarActivity {
   }
 
   private void onTweet() {
-    this.client.postTweet(this.tweetEditText.getText().toString(), new TwitterClient.Handler<Tweet>() {
+    this.client.postTweet().message(this.tweetEditText.getText().toString()).submit(new TwitterClient.HandlerAdapter<Tweet>() {
       @Override
       public void onSuccess(Tweet tweet) {
         Intent data = new Intent();
@@ -110,9 +107,6 @@ public class ComposeActivity extends ActionBarActivity {
         setResult(RESULT_OK, data);
         ComposeActivity.this.finish();
       }
-
-      @Override
-      public void onFailure(int statusCode, String error) {}
     });
   }
 }
