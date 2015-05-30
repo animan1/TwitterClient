@@ -23,6 +23,16 @@ public class User extends Model {
   public String profileImageUrl;
   @Column(name = "updatedDateTime", notNull = true)
   public Date updatedDateTime;
+  @Column(name = "bannerImageUrl")
+  public String bannerImageUrl;
+  @Column(name = "tagLine")
+  public String tagLine;
+  @Column(name = "numTweets")
+  public int numTweets;
+  @Column(name = "numFollowing")
+  public int numFollowing;
+  @Column(name = "numFollowers")
+  public int numFollowers;
 
   public User() {}
 
@@ -37,6 +47,11 @@ public class User extends Model {
       this.displayName = userObject.getString("name");
       this.profileImageUrl = userObject.getString("profile_image_url_https");
       this.updatedDateTime = new Date();
+      this.bannerImageUrl = userObject.getString("profile_background_image_url_https");
+      this.tagLine = userObject.getString("description");
+      this.numTweets = userObject.getInt("statuses_count");
+      this.numFollowing = userObject.getInt("friends_count");
+      this.numFollowers = userObject.getInt("followers_count");
     } catch (JSONException e) {
       Log.i(null, userObject + "");
       e.printStackTrace();
