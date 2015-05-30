@@ -2,8 +2,8 @@ package com.codepath.apps.twitterclient.network;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.widget.Toast;
-import com.activeandroid.util.Log;
 import com.codepath.apps.twitterclient.R;
 import com.codepath.apps.twitterclient.Utils;
 import com.codepath.apps.twitterclient.models.Tweet;
@@ -48,7 +48,8 @@ public class TwitterClient extends OAuthBaseClient {
 
   public static final String LOGGED_IN_USER_ID = "logged_in_user_id";
   public static final String TWITTER_PREFERENCES = "twitter";
-  public static final int MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
+  public static final long MILLIS_IN_SECOND = 100;
+  public static final long MILLIS_IN_DAY = MILLIS_IN_SECOND * 60 * 60 * 24;
   public static final Class<? extends Api> REST_API_CLASS = TwitterApi.class;
   public static final String REST_URL ="https://api.twitter.com/1.1";
   public static final String REST_CALLBACK_URL = "oauth://codepathtweets";
@@ -138,6 +139,7 @@ public class TwitterClient extends OAuthBaseClient {
 
   public class UserRetriever extends Requester {
     private final long userId;
+    private long cacheTTL = MILLIS_IN_DAY;
 
     public UserRetriever(String relativeUrl, final long userId) {
       super(relativeUrl, new TwitterResponseHandler() {
@@ -166,9 +168,14 @@ public class TwitterClient extends OAuthBaseClient {
       return this;
     }
 
+    public UserRetriever cacheTTL(long ttl) {
+      this.cacheTTL = ttl;
+      return this;
+    }
+
     public void submit(final Handler<User> handler) {
       User user = getCachedUser(userId);
-      if ((user != null) && (new Date().getTime() - user.updatedDateTime.getTime() < MILLIS_IN_DAY)) {
+      if ((user != null) && (new Date().getTime() - user.updatedDateTime.getTime() < cacheTTL)) {
         handler.onSuccess(user);
         return;
       }

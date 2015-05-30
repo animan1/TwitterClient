@@ -3,4 +3,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:context="com.codepath.apps.twitterclient.activities.ProfileActivity">
+  <com.codepath.apps.TargetLinearLayout
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:id="@+id/bannerLayout"
+      android:orientation="vertical">
+  </com.codepath.apps.TargetLinearLayout>
 </RelativeLayout>
