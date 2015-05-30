@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.codepath.apps.twitterclient.activities.HomeStreamActivity">
+  <item android:id="@+id/action_profile"
+      android:orderInCategory="100"
+      android:title="@string/profile"
+      app:showAsAction="ifRoom|collapseActionView"
+      android:onClick="onProfile"
+      android:icon="@drawable/ic_action_user"
+      />
+</menu>
