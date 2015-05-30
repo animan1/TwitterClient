@@ -58,7 +58,7 @@ public class StreamFragment extends Fragment {
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    View view = inflater.inflate(R.layout.fragment_home_stream, container, false);
+    View view = inflater.inflate(R.layout.fragment_stream, container, false);
 
     tweetListView = (ListView) view.findViewById(R.id.tweetListView);
     timelineSwipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.timelineSwipeContainer);
@@ -87,7 +87,7 @@ public class StreamFragment extends Fragment {
   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
     // Inflate the menu; this adds items to the action bar if it is present.
-    inflater.inflate(R.menu.menu_home_stream, menu);
+    inflater.inflate(R.menu.menu_stream, menu);
     MenuItem composeMenuItem = menu.findItem(R.id.action_compose);
     composeMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
       @Override
