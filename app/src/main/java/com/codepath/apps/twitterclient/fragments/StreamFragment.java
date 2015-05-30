@@ -19,8 +19,10 @@ import java.util.ArrayList;
 
 public class StreamFragment extends Fragment {
   private static final int COMPOSE_REQUEST_CODE = 100;
+  public static final String TIMELINE_INDEX = "timeline_index";
 
   TwitterClient client;
+  TwitterClient.TIMELINE timeline;
 
   private ListView tweetListView;
   private TweetAdapter tweetAdapter;
@@ -30,7 +32,7 @@ public class StreamFragment extends Fragment {
     @Override
     public void onLoadMore(int page, int totalItemsCount) {
       String lastId = tweetAdapter.getItem(totalItemsCount - 1).remoteId;
-      client.getTimeline(TwitterClient.TIMELINE.HOME).olderThan(lastId).submit(new TwitterClient.Handler<ArrayList<Tweet>>() {
+      client.getTimeline(timeline).olderThan(lastId).submit(new TwitterClient.Handler<ArrayList<Tweet>>() {
         @Override
         public void onSuccess(ArrayList<Tweet> tweets) {
           tweetAdapter.addAll(tweets);
@@ -49,6 +51,8 @@ public class StreamFragment extends Fragment {
     super.onCreate(savedInstanceState);
     tweetAdapter = new TweetAdapter(getActivity(), new ArrayList<Tweet>());
     client = TwitterApplication.getTwitterClient();
+    int timeline_index = getArguments().getInt(TIMELINE_INDEX);
+    this.timeline = TwitterClient.TIMELINE.values()[timeline_index];
     setHasOptionsMenu(true);
   }
 
@@ -112,7 +116,7 @@ public class StreamFragment extends Fragment {
   private void refresh() {
     // don't allow paging while we're fetching new results
     tweetListView.setOnScrollListener(null);
-    client.getTimeline(TwitterClient.TIMELINE.HOME).submit(new TwitterClient.Handler<ArrayList<Tweet>>() {
+    client.getTimeline(timeline).submit(new TwitterClient.Handler<ArrayList<Tweet>>() {
       @Override
       public void onSuccess(ArrayList<Tweet> tweetList) {
         tweetAdapter.clear();
