@@ -4,7 +4,10 @@ import android.util.Log;
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.activeandroid.query.From;
 import com.activeandroid.query.Select;
+import com.codepath.apps.twitterclient.network.TwitterClient;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,21 +30,43 @@ public class Tweet extends Model {
   public Date createdDatetime;
   @Column(name = "user", notNull = true)
   public User user;
+  @Column(name = "isHome", notNull = true)
+  public boolean isHome;
+  @Column(name = "isMention", notNull = true)
+  public boolean isMention;
+  @Column(name = "isUser", notNull = true)
+  public boolean isUser;
+
 
   public Tweet() {
     super();
   }
 
-  public Tweet(JSONObject tweetJson) {
-    set(tweetJson);
+  public Tweet(JSONObject tweetJson, TwitterClient.TIMELINE ... timelines) {
+    set(tweetJson, timelines);
   }
 
-  private void set(JSONObject tweetJson) {
+  private void set(JSONObject tweetJson, TwitterClient.TIMELINE ... timelines) {
     try {
       this.remoteId = getRemoteId(tweetJson);
       this.user = User.fromJson(tweetJson.getJSONObject("user"));
       this.body = tweetJson.getString("text");
       this.createdDatetime = CREATED_AT_FORMAT.parse(tweetJson.getString("created_at"));
+      for (TwitterClient.TIMELINE timeline : timelines) {
+        switch (timeline) {
+          case HOME:
+            this.isHome = true;
+            break;
+          case MENTIONS:
+            this.isMention = true;
+            break;
+          case USER:
+            this.isUser = true;
+            break;
+          default:
+            throw new UnsupportedOperationException("New timeline type not supported");
+        }
+      }
     } catch (JSONException | ParseException e) {
       Log.i(null, tweetJson + "");
       e.printStackTrace();
@@ -57,26 +82,36 @@ public class Tweet extends Model {
     return tweetJson.getString("id_str");
   }
 
-  public static List<Tweet> getRecentCached(int count) {
-    return new Select().from(Tweet.class).orderBy("-remoteId").execute();
+  public static From getCached(TwitterClient.TIMELINE timeline) {
+    From results = new Select().from(Tweet.class).orderBy("-remoteId");
+    switch (timeline) {
+      case HOME:
+        return results.where("isHome = ?", true);
+      case MENTIONS:
+        return results.where("isMention = ?", true);
+      case USER:
+        return results.where("isUser = ?", true);
+      default:
+        throw new UnsupportedOperationException("New timeline type not supported");
+    }
   }
 
-  public static ArrayList<Tweet> fromJson(JSONArray jsonArray) {
+  public static ArrayList<Tweet> fromJson(JSONArray jsonArray, TwitterClient.TIMELINE ... timelines) {
     ArrayList<Tweet> tweets = new ArrayList<>(jsonArray.length());
 
     for (int i=0; i < jsonArray.length(); i++) {
-      Tweet tweet = fromJson(jsonArray.optJSONObject(i));
+      Tweet tweet = fromJson(jsonArray.optJSONObject(i), timelines);
       tweets.add(tweet);
     }
 
     return tweets;
   }
 
-  public static Tweet fromJson(JSONObject tweetJson) {
+  public static Tweet fromJson(JSONObject tweetJson, TwitterClient.TIMELINE ... timelines) {
     try {
       String remoteId = getRemoteId(tweetJson);
       Tweet tweet = newOrLoad(remoteId);
-      tweet.set(tweetJson);
+      tweet.set(tweetJson, timelines);
       tweet.save();
       return tweet;
     } catch (Exception e) {

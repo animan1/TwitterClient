@@ -8,6 +8,7 @@ import android.widget.TextView;
 import com.codepath.apps.TargetLinearLayout;
 import com.codepath.apps.twitterclient.R;
 import com.codepath.apps.twitterclient.TwitterApplication;
+import com.codepath.apps.twitterclient.fragments.StreamFragment;
 import com.codepath.apps.twitterclient.models.User;
 import com.codepath.apps.twitterclient.network.TwitterClient;
 import com.squareup.picasso.Picasso;
@@ -26,6 +27,12 @@ public class ProfileActivity extends ActionBarActivity {
         initUser(user);
       }
     });
+
+    StreamFragment streamFragment = new StreamFragment();
+    Bundle bundle = new Bundle();
+    bundle.putInt(StreamFragment.TIMELINE_INDEX, TwitterClient.TIMELINE.USER.ordinal());
+    streamFragment.setArguments(bundle);
+    getSupportFragmentManager().beginTransaction().replace(R.id.streamHolder, streamFragment).commit();
   }
 
   public void initUser(User user) {

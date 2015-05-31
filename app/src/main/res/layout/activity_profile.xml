@@ -136,4 +136,9 @@
       android:layout_height="1dip"
       android:background="@android:color/darker_gray"
       />
+  <FrameLayout
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:id="@+id/streamHolder"
+      android:layout_weight="1"/>
 </LinearLayout>

@@ -26,7 +26,8 @@ public class TwitterClient extends OAuthBaseClient {
 
   public enum TIMELINE {
     HOME("home_timeline"),
-    MENTIONS("mentions_timeline");
+    MENTIONS("mentions_timeline"),
+    USER("user_timeline");
 
     private final String relativeUrl;
 
@@ -104,7 +105,7 @@ public class TwitterClient extends OAuthBaseClient {
 
   public class TimelineRetriever extends Requester<ArrayList<Tweet>> {
 
-    public TimelineRetriever(TIMELINE timeline) {
+    public TimelineRetriever(final TIMELINE timeline) {
       super(timeline.relativeUrl, new TwitterResponseHandler() {
         @Override
         public void onSuccess(int statusCode, Header[] headers, final JSONArray response) {
@@ -112,7 +113,7 @@ public class TwitterClient extends OAuthBaseClient {
             @Override
             protected ArrayList<Tweet> doInBackground(JSONArray ... params) {
               JSONArray response = params[0];
-              return Tweet.fromJson(response);
+              return Tweet.fromJson(response, timeline);
             }
 
             @Override
@@ -205,7 +206,7 @@ public class TwitterClient extends OAuthBaseClient {
       super("statuses/update.json", new TwitterResponseHandler() {
         @Override
         public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-          onSuccess(Tweet.fromJson(response));
+          onSuccess(Tweet.fromJson(response, TIMELINE.HOME, TIMELINE.USER));
         }
       });
     }

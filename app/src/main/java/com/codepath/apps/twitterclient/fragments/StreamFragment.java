@@ -1,12 +1,18 @@
 package com.codepath.apps.twitterclient.fragments;
 
-import android.support.v4.app.FragmentActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
+
 import com.codepath.apps.twitterclient.R;
 import com.codepath.apps.twitterclient.TwitterApplication;
 import com.codepath.apps.twitterclient.activities.ComposeActivity;
@@ -16,6 +22,7 @@ import com.codepath.apps.twitterclient.models.Tweet;
 import com.codepath.apps.twitterclient.network.TwitterClient;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class StreamFragment extends Fragment {
   private static final int COMPOSE_REQUEST_CODE = 100;
@@ -78,7 +85,8 @@ public class StreamFragment extends Fragment {
   }
 
   public void initTweetListView() {
-    tweetAdapter.addAll(Tweet.getRecentCached(50));
+    List<Tweet> cached = Tweet.getCached(timeline).limit(50).execute();
+    tweetAdapter.addAll(cached);
     tweetListView.setAdapter(tweetAdapter);
     refresh();
   }
