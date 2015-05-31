@@ -20,25 +20,41 @@ public class ProfileActivity extends ActionBarActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_profile);
 
-    initBannerLayout();
-  }
-
-  private void initBannerLayout() {
     TwitterApplication.getTwitterClient().getLoggedInUser().cacheTTL(TwitterClient.MILLIS_IN_SECOND).submit(new TwitterClient.HandlerAdapter<User>() {
       @Override
       public void onSuccess(User user) {
-        TargetLinearLayout bannerLayout = (TargetLinearLayout) findViewById(R.id.bannerLayout);
-        Picasso.with(ProfileActivity.this).load(user.bannerImageUrl).into(bannerLayout);
-
-        ImageView profileImageView = (ImageView) findViewById(R.id.profileImageView);
-        Picasso.with(ProfileActivity.this).load(user.profileImageUrl).into(profileImageView);
-
-        TextView authorTextView = (TextView) findViewById(R.id.authorTextView);
-        authorTextView.setText(user.displayName);
-
-        TextView usernameTextView = (TextView) findViewById(R.id.usernameTextView);
-        usernameTextView.setText("@" + user.username);
+        initUser(user);
       }
     });
+  }
+
+  public void initUser(User user) {
+    initBannerLayout(user);
+    initStats(user);
+  }
+
+  private void initBannerLayout(User user) {
+    TargetLinearLayout bannerLayout = (TargetLinearLayout) findViewById(R.id.bannerLayout);
+    Picasso.with(ProfileActivity.this).load(user.bannerImageUrl).into(bannerLayout);
+
+    ImageView profileImageView = (ImageView) findViewById(R.id.profileImageView);
+    Picasso.with(ProfileActivity.this).load(user.profileImageUrl).into(profileImageView);
+
+    TextView authorTextView = (TextView) findViewById(R.id.authorTextView);
+    authorTextView.setText(user.displayName);
+
+    TextView usernameTextView = (TextView) findViewById(R.id.usernameTextView);
+    usernameTextView.setText("@" + user.username);
+  }
+
+  private void initStats(User user) {
+    TextView tweetCountTextView = (TextView) findViewById(R.id.tweetCountTextView);
+    tweetCountTextView.setText(user.numTweets + "");
+
+    TextView followingCountTextView = (TextView) findViewById(R.id.followingCountTextView);
+    followingCountTextView.setText(user.numFollowing + "");
+
+    TextView followersCountTextView = (TextView) findViewById(R.id.followersCountTextView);
+    followersCountTextView.setText(user.numFollowers + "");
   }
 }

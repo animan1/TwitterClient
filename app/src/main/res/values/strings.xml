@@ -11,5 +11,8 @@
   <string name="count">count</string>
   <string name="profile">Profile</string>
   <string name="title_activity_profile">ProfileActivity</string>
+  <string name="tweets">Tweets</string>
+  <string name="followers">Followers</string>
+  <string name="following">Following</string>
 
 </resources>
