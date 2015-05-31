@@ -28,7 +28,7 @@ public class StreamFragment extends Fragment {
   private TweetAdapter tweetAdapter;
   private SwipeRefreshLayout timelineSwipeContainer;
 
-  EndlessScrollListener scrollListener = new EndlessScrollListener(25) {
+  EndlessScrollListener scrollListener = new EndlessScrollListener() {
     @Override
     public void onLoadMore(int page, int totalItemsCount) {
       String lastId = tweetAdapter.getItem(totalItemsCount - 1).remoteId;
@@ -121,7 +121,6 @@ public class StreamFragment extends Fragment {
       public void onSuccess(ArrayList<Tweet> tweetList) {
         tweetAdapter.clear();
         tweetAdapter.addAll(tweetList);
-        tweetAdapter.notifyDataSetChanged();
         tweetListView.setOnScrollListener(scrollListener);
         timelineSwipeContainer.setRefreshing(false);
       }

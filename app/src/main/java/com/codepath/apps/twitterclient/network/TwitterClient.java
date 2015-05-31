@@ -2,6 +2,7 @@ package com.codepath.apps.twitterclient.network;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 import com.codepath.apps.twitterclient.R;
@@ -106,8 +107,19 @@ public class TwitterClient extends OAuthBaseClient {
     public TimelineRetriever(TIMELINE timeline) {
       super(timeline.relativeUrl, new TwitterResponseHandler() {
         @Override
-        public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-          onSuccess(Tweet.fromJson(response));
+        public void onSuccess(int statusCode, Header[] headers, final JSONArray response) {
+          new AsyncTask<JSONArray, Void, ArrayList<Tweet>>() {
+            @Override
+            protected ArrayList<Tweet> doInBackground(JSONArray ... params) {
+              JSONArray response = params[0];
+              return Tweet.fromJson(response);
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<Tweet> tweets) {
+              onSuccess(tweets);
+            }
+          }.execute(response);
         }
       });
       params.put("count", 25);
