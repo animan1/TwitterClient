@@ -47,7 +47,7 @@ public class User extends Model {
       this.displayName = userObject.getString("name");
       this.profileImageUrl = userObject.getString("profile_image_url_https");
       this.updatedDateTime = new Date();
-      this.bannerImageUrl = userObject.getString("profile_background_image_url_https");
+      this.bannerImageUrl = userObject.getString("profile_banner_url");
       this.tagLine = userObject.getString("description");
       this.numTweets = userObject.getInt("statuses_count");
       this.numFollowing = userObject.getInt("friends_count");

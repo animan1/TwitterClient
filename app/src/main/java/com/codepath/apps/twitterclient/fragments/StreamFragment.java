@@ -11,14 +11,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.codepath.apps.twitterclient.R;
 import com.codepath.apps.twitterclient.TwitterApplication;
 import com.codepath.apps.twitterclient.activities.ComposeActivity;
 import com.codepath.apps.twitterclient.activities.EndlessScrollListener;
+import com.codepath.apps.twitterclient.activities.ProfileActivity;
 import com.codepath.apps.twitterclient.adapters.TweetAdapter;
 import com.codepath.apps.twitterclient.models.Tweet;
+import com.codepath.apps.twitterclient.models.User;
 import com.codepath.apps.twitterclient.network.TwitterClient;
 
 import java.util.ArrayList;
@@ -88,6 +91,12 @@ public class StreamFragment extends Fragment {
     List<Tweet> cached = Tweet.getCached(timeline).limit(50).execute();
     tweetAdapter.addAll(cached);
     tweetListView.setAdapter(tweetAdapter);
+    tweetListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        onUserClicked(tweetAdapter.getItem(i).user);
+      }
+    });
     refresh();
   }
 
@@ -104,6 +113,12 @@ public class StreamFragment extends Fragment {
         return false;
       }
     });
+  }
+
+  private void onUserClicked(User user) {
+    Intent i = new Intent(getActivity(), ProfileActivity.class);
+    i.putExtra(ProfileActivity.USER_ID, user.getId());
+    startActivity(i);
   }
 
   private void onCompose() {

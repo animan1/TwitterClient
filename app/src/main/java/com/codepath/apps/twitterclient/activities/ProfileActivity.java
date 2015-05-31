@@ -1,5 +1,6 @@
 package com.codepath.apps.twitterclient.activities;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.ImageView;
@@ -11,17 +12,24 @@ import com.codepath.apps.twitterclient.TwitterApplication;
 import com.codepath.apps.twitterclient.fragments.StreamFragment;
 import com.codepath.apps.twitterclient.models.User;
 import com.codepath.apps.twitterclient.network.TwitterClient;
+import com.codepath.apps.twitterclient.utils.DimensionsHelper;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 
 
 public class ProfileActivity extends ActionBarActivity {
+
+  public static final String USER_ID = "user_id";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_profile);
 
-    TwitterApplication.getTwitterClient().getLoggedInUser().cacheTTL(TwitterClient.MILLIS_IN_SECOND).submit(new TwitterClient.HandlerAdapter<User>() {
+    TwitterClient client = TwitterApplication.getTwitterClient();
+    long userId = getIntent().getLongExtra(USER_ID, -1);
+    TwitterClient.UserRetriever userRetriever = userId == -1 ? client.getLoggedInUser() : client.getUserWithId(userId);
+    userRetriever.cacheTTL(TwitterClient.MILLIS_IN_SECOND).submit(new TwitterClient.HandlerAdapter<User>() {
       @Override
       public void onSuccess(User user) {
         initUser(user);
@@ -42,7 +50,20 @@ public class ProfileActivity extends ActionBarActivity {
 
   private void initBannerLayout(User user) {
     TargetLinearLayout bannerLayout = (TargetLinearLayout) findViewById(R.id.bannerLayout);
-    Picasso.with(ProfileActivity.this).load(user.bannerImageUrl).into(bannerLayout);
+    final int height = bannerLayout.getHeight();
+    final int width = bannerLayout.getWidth();
+    Picasso.with(ProfileActivity.this).load(user.bannerImageUrl).transform(new Transformation() {
+      @Override
+      public Bitmap transform(Bitmap source) {
+        Bitmap updated = DimensionsHelper.scaleToFitHeight(source, height, true);
+        return DimensionsHelper.cropToFitWidth(updated, width, true);
+      }
+
+      @Override
+      public String key() {
+        return "centerCrop h=" + height + " w=" + width;
+      }
+    }).into(bannerLayout);
 
     ImageView profileImageView = (ImageView) findViewById(R.id.profileImageView);
     Picasso.with(ProfileActivity.this).load(user.profileImageUrl).into(profileImageView);

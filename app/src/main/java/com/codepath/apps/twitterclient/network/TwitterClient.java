@@ -6,7 +6,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 import com.codepath.apps.twitterclient.R;
-import com.codepath.apps.twitterclient.Utils;
+import com.codepath.apps.twitterclient.utils.NetworkHelper;
 import com.codepath.apps.twitterclient.models.Tweet;
 import com.codepath.apps.twitterclient.models.User;
 import com.codepath.oauth.OAuthBaseClient;
@@ -82,7 +82,7 @@ public class TwitterClient extends OAuthBaseClient {
 
     void get(Handler<E> handler) {
       responseHandler.handlers.add(handler);
-      if (!Utils.isNetworkAvailable(context)) {
+      if (!NetworkHelper.isNetworkAvailable(context)) {
         responseHandler.onFailure(0, null, null, (JSONObject) null);
         return;
       }
@@ -91,7 +91,7 @@ public class TwitterClient extends OAuthBaseClient {
 
     void post(Handler<E> handler) {
       responseHandler.handlers.add(handler);
-      if (!Utils.isNetworkAvailable(context)) {
+      if (!NetworkHelper.isNetworkAvailable(context)) {
         responseHandler.onFailure(0, null, null, (JSONObject) null);
         return;
       }
@@ -146,8 +146,12 @@ public class TwitterClient extends OAuthBaseClient {
     });
   }
 
+  public UserRetriever getUserWithId(long userId) {
+    return new UserRetriever("users/show.json", userId);
+  }
+
   public User getCachedUser(long id) {
-    return id == -1 ? null : User.load(User.class, id);
+    return id < 0 ? null : User.load(User.class, id);
   }
 
   public class UserRetriever extends Requester {

@@ -14,37 +14,45 @@
       android:padding="10dp"
       android:scaleType="centerCrop"
       >
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:id="@+id/profileImageView"
-        android:src="@drawable/profile"
-        android:layout_margin="3dp"
-        android:layout_centerInParent="true"
-        />
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/authorTextView"
-        android:layout_toRightOf="@id/profileImageView"
-        android:layout_alignTop="@id/profileImageView"
-        android:layout_alignParentRight="true"
-        android:textColor="@android:color/black"
-        android:layout_centerInParent="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/usernameTextView"
-        android:layout_toRightOf="@id/profileImageView"
-        android:layout_below="@id/authorTextView"
-        android:layout_alignBottom="@id/profileImageView"
-        android:layout_alignParentRight="true"
-        android:textColor="@android:color/darker_gray"
-        android:layout_centerInParent="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        />
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#AAFFFFFF"
+        >
+      <ImageView
+          android:layout_width="50dp"
+          android:layout_height="50dp"
+          android:id="@+id/profileImageView"
+          android:src="@drawable/profile"
+          android:layout_margin="3dp"
+          android:layout_centerInParent="true"
+          />
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:id="@+id/authorTextView"
+          android:layout_toRightOf="@id/profileImageView"
+          android:layout_alignTop="@id/profileImageView"
+          android:layout_alignParentRight="true"
+          android:textColor="@android:color/black"
+          android:layout_centerInParent="true"
+          android:textAppearance="?android:attr/textAppearanceMedium"
+          />
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:id="@+id/usernameTextView"
+          android:layout_toRightOf="@id/profileImageView"
+          android:layout_below="@id/authorTextView"
+          android:layout_alignBottom="@id/profileImageView"
+          android:layout_alignParentRight="true"
+          android:textColor="#777777"
+          android:layout_centerInParent="true"
+          android:textAppearance="?android:attr/textAppearanceMedium"
+          />
+    </LinearLayout>
   </com.codepath.apps.TargetLinearLayout>
   <View
       android:layout_width="fill_parent"
