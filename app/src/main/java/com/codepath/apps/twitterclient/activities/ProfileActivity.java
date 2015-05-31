@@ -2,6 +2,8 @@ package com.codepath.apps.twitterclient.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.codepath.apps.TargetLinearLayout;
 import com.codepath.apps.twitterclient.R;
@@ -27,6 +29,15 @@ public class ProfileActivity extends ActionBarActivity {
       public void onSuccess(User user) {
         TargetLinearLayout bannerLayout = (TargetLinearLayout) findViewById(R.id.bannerLayout);
         Picasso.with(ProfileActivity.this).load(user.bannerImageUrl).into(bannerLayout);
+
+        ImageView profileImageView = (ImageView) findViewById(R.id.profileImageView);
+        Picasso.with(ProfileActivity.this).load(user.profileImageUrl).into(profileImageView);
+
+        TextView authorTextView = (TextView) findViewById(R.id.authorTextView);
+        authorTextView.setText(user.displayName);
+
+        TextView usernameTextView = (TextView) findViewById(R.id.usernameTextView);
+        usernameTextView.setText("@" + user.username);
       }
     });
   }
