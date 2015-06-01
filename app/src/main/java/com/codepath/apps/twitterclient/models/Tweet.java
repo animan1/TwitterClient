@@ -22,6 +22,7 @@ import java.util.List;
 @Table(name = "Tweets")
 public class Tweet extends Model {
   final static DateFormat CREATED_AT_FORMAT = new SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZ yyyy");
+  private static final String TAG = Tweet.class.getSimpleName();
   @Column(name = "remoteId", unique = true, notNull = true)
   public String remoteId;
   @Column(name = "body", notNull = true)
@@ -68,7 +69,7 @@ public class Tweet extends Model {
         }
       }
     } catch (JSONException | ParseException e) {
-      Log.i(null, tweetJson + "");
+      Log.i(TAG, tweetJson + "");
       e.printStackTrace();
     }
   }

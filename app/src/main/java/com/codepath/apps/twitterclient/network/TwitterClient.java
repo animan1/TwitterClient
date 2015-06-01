@@ -124,6 +124,7 @@ public class TwitterClient extends OAuthBaseClient {
         }
       });
       params.put("count", 25);
+      params.put("include_rts", true);
     }
 
     public TimelineRetriever olderThan(String olderThanId) {
@@ -134,11 +135,21 @@ public class TwitterClient extends OAuthBaseClient {
     public void submit(final Handler<ArrayList<Tweet>> handler) {
       get(handler);
     }
+
+    public TimelineRetriever withUser(User user) {
+      if (user != null) {
+        params.put("user_id", user.remoteId);
+      }
+      return this;
+    }
+  }
+
+  public long getLoggedInUserId() {
+    return preferences.getLong(LOGGED_IN_USER_ID, -1);
   }
 
   public UserRetriever getLoggedInUser() {
-    long loggedInUserId = preferences.getLong(LOGGED_IN_USER_ID, -1);
-    return new UserRetriever("account/verify_credentials.json", loggedInUserId).extraHandler(new HandlerAdapter<User>() {
+    return new UserRetriever("account/verify_credentials.json", getLoggedInUserId()).extraHandler(new HandlerAdapter<User>() {
       @Override
       public void onSuccess(User user) {
         preferences.edit().putLong(LOGGED_IN_USER_ID, user.getId()).apply();

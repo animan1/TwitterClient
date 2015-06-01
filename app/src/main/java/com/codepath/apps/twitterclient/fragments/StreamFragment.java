@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.activeandroid.query.From;
 import com.codepath.apps.twitterclient.R;
 import com.codepath.apps.twitterclient.TwitterApplication;
 import com.codepath.apps.twitterclient.activities.ComposeActivity;
@@ -30,6 +31,7 @@ import java.util.List;
 public class StreamFragment extends Fragment {
   private static final int COMPOSE_REQUEST_CODE = 100;
   public static final String TIMELINE_INDEX = "timeline_index";
+  public static final String USER_ID = "user_id";
 
   TwitterClient client;
   TwitterClient.TIMELINE timeline;
@@ -37,12 +39,13 @@ public class StreamFragment extends Fragment {
   private ListView tweetListView;
   private TweetAdapter tweetAdapter;
   private SwipeRefreshLayout timelineSwipeContainer;
+  private User user = null;
 
   EndlessScrollListener scrollListener = new EndlessScrollListener() {
     @Override
     public void onLoadMore(int page, int totalItemsCount) {
       String lastId = tweetAdapter.getItem(totalItemsCount - 1).remoteId;
-      client.getTimeline(timeline).olderThan(lastId).submit(new TwitterClient.Handler<ArrayList<Tweet>>() {
+      client.getTimeline(timeline).withUser(user).olderThan(lastId).submit(new TwitterClient.Handler<ArrayList<Tweet>>() {
         @Override
         public void onSuccess(ArrayList<Tweet> tweets) {
           tweetAdapter.addAll(tweets);
@@ -63,6 +66,10 @@ public class StreamFragment extends Fragment {
     client = TwitterApplication.getTwitterClient();
     int timeline_index = getArguments().getInt(TIMELINE_INDEX);
     this.timeline = TwitterClient.TIMELINE.values()[timeline_index];
+    long userId = getArguments().getLong(USER_ID, -1);
+    if (userId != -1) {
+      this.user = User.load(User.class, userId);
+    }
     setHasOptionsMenu(true);
   }
 
@@ -88,7 +95,11 @@ public class StreamFragment extends Fragment {
   }
 
   public void initTweetListView() {
-    List<Tweet> cached = Tweet.getCached(timeline).limit(50).execute();
+    From query = Tweet.getCached(timeline);
+    if (this.user != null) {
+      query.where("user = ?", this.user.getId());
+    }
+    List<Tweet> cached = query.limit(50).execute();
     tweetAdapter.addAll(cached);
     tweetListView.setAdapter(tweetAdapter);
     tweetListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -139,7 +150,7 @@ public class StreamFragment extends Fragment {
   private void refresh() {
     // don't allow paging while we're fetching new results
     tweetListView.setOnScrollListener(null);
-    client.getTimeline(timeline).submit(new TwitterClient.Handler<ArrayList<Tweet>>() {
+    client.getTimeline(timeline).withUser(this.user).submit(new TwitterClient.Handler<ArrayList<Tweet>>() {
       @Override
       public void onSuccess(ArrayList<Tweet> tweetList) {
         tweetAdapter.clear();

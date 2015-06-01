@@ -27,8 +27,8 @@ public class ProfileActivity extends ActionBarActivity {
     setContentView(R.layout.activity_profile);
 
     TwitterClient client = TwitterApplication.getTwitterClient();
-    long userId = getIntent().getLongExtra(USER_ID, -1);
-    TwitterClient.UserRetriever userRetriever = userId == -1 ? client.getLoggedInUser() : client.getUserWithId(userId);
+    long userId = getIntent().getLongExtra(USER_ID, client.getLoggedInUserId());
+    TwitterClient.UserRetriever userRetriever = client.getUserWithId(userId);
     userRetriever.cacheTTL(TwitterClient.MILLIS_IN_SECOND).submit(new TwitterClient.HandlerAdapter<User>() {
       @Override
       public void onSuccess(User user) {
@@ -39,6 +39,7 @@ public class ProfileActivity extends ActionBarActivity {
     StreamFragment streamFragment = new StreamFragment();
     Bundle bundle = new Bundle();
     bundle.putInt(StreamFragment.TIMELINE_INDEX, TwitterClient.TIMELINE.USER.ordinal());
+    bundle.putLong(StreamFragment.USER_ID, userId);
     streamFragment.setArguments(bundle);
     getSupportFragmentManager().beginTransaction().replace(R.id.streamHolder, streamFragment).commit();
   }

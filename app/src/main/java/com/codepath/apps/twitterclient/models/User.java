@@ -13,6 +13,7 @@ import java.util.List;
 
 @Table(name = "User")
 public class User extends Model {
+  private static final String TAG = User.class.getSimpleName();
   @Column(name = "remoteId", unique = true, notNull = true)
   public String remoteId;
   @Column(name = "username", notNull = true)
@@ -42,29 +43,29 @@ public class User extends Model {
 
   private void set(JSONObject userObject) {
     try {
-      this.remoteId = getRemoteId(userObject);
-      this.username = userObject.getString("screen_name");
-      this.displayName = userObject.getString("name");
-      this.profileImageUrl = userObject.getString("profile_image_url_https");
+      this.remoteId = optRemoteId(userObject, this.remoteId);
+      this.username = userObject.optString("screen_name", this.username);
+      this.displayName = userObject.optString("name", this.displayName);
+      this.profileImageUrl = userObject.optString("profile_image_url_https", this.profileImageUrl);
       this.updatedDateTime = new Date();
-      this.bannerImageUrl = userObject.getString("profile_banner_url");
-      this.tagLine = userObject.getString("description");
-      this.numTweets = userObject.getInt("statuses_count");
-      this.numFollowing = userObject.getInt("friends_count");
-      this.numFollowers = userObject.getInt("followers_count");
+      this.bannerImageUrl = userObject.optString("profile_banner_url", this.bannerImageUrl);
+      this.tagLine = userObject.optString("description", this.tagLine);
+      this.numTweets = userObject.optInt("statuses_count", this.numTweets);
+      this.numFollowing = userObject.optInt("friends_count", this.numFollowing);
+      this.numFollowers = userObject.optInt("followers_count", this.numFollowers);
     } catch (JSONException e) {
-      Log.i(null, userObject + "");
+      Log.i(TAG, userObject + "");
       e.printStackTrace();
     }
   }
 
-  static String getRemoteId(JSONObject userObject) throws JSONException {
-    return userObject.getString("id_str");
+  static String optRemoteId(JSONObject userObject, String defaultValue) throws JSONException {
+    return userObject.optString("id_str", defaultValue);
   }
 
   public static User fromJson(JSONObject userObject) {
     try {
-      List<User> userList = new Select().from(User.class).where("remoteId = ?", getRemoteId(userObject)).execute();
+      List<User> userList = new Select().from(User.class).where("remoteId = ?", optRemoteId(userObject, null)).execute();
       User user = userList.isEmpty() ? new User() : userList.get(0);
       user.set(userObject);
       user.save();
