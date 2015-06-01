@@ -49,7 +49,7 @@ The following **bonus** features are implemented:
 
 Here's a walkthrough of implemented user stories:
 
-![Video Walkthrough](anim_client.gif)
+![Video Walkthrough](anim_client2.gif)
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
